@@ -1,1 +1,55 @@
+##index.html
+
+<!DOCTYPE html>
+<html>
+<head>
+        <script>
+        var callAPI = (base,exponent)=>{
+            var myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+            var raw = JSON.stringify({"base":base,"exponent":exponent});
+            var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw,
+                redirect: 'follow'
+            };
+            fetch("https://ytfcdjbqwk.execute-api.us-east-1.amazonaws.com/prod", requestOptions)
+            .then(response => response.text())
+            .then(result => alert(JSON.parse(result).body))
+            .catch(error => console.log('error', error));
+        }
+    </script>
+</head>
+<body>
+    <h1>TO THE POWER OF MATH!</h1>
+  <form>
+        <label>Base number:</label>
+        <input type="text" id="base">
+        <label>...to the power of:</label>
+        <input type="text" id="exponent">
+        <button type="button" onclick="callAPI(document.getElementById('base').value,document.getElementById('exponent').value)">CALCULATE</button>
+    </form>
+</body>
+</html>
+
+
+
+##lambda_handler.py
+
+import json
+import math
+import boto3
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('math')
+def lambda_handler(event, context):
+mathResult = math.pow(int(event['base']), int(event['exponent']))
+response = table.put_item(
+        Item={
+            ‘id': str(mathResult),
+})
+return {
+    'statusCode': 200,
+    'body': json.dumps('Your result is ' + str(mathResult))
+    }
 
